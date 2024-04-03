@@ -104,7 +104,22 @@ Four EduOM_CreateObject(
 	/* Error check whether using not supported functionality by EduOM */
 	if(ALIGNED_LENGTH(length) > LRGOBJ_THRESHOLD) ERR(eNOTSUPPORTED_EDUOM);
     
+    /* 
+    parameter로 준 objHdr를 활용해 초기화를 진행하고,
+    eduom_CreateObject() 내부함수를 활용해 page에 object를 삽입한다.
+    */
 
+    // 1. Header initialization
+    objectHdr.properties = 0x0;
+    objectHdr.length = 0;
+    if (objHdr != NULL)
+        objectHdr.tag = objHdr;
+    else 
+        objectHdr.tag = 0;
+
+    // 2. Call eduom_CreateObject() to insert an object into the page
+    // and return the ID of the object inserted
+    return eduom_CreateObject(catObjForFile, nearObj, &objectHdr, length, data, oid);
     
     return(eNOERROR);
 }
