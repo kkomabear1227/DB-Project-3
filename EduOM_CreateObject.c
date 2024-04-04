@@ -192,10 +192,6 @@ Four eduom_CreateObject(
     */
 
     // 0. 사전에 setting 되어야할 값
-    // pFid - manual p44
-    e = RDsM_PageIdToExtNo((PageID *)&pFid, &firstExt);
-    if (e < 0) ERR(e);
-
     // catPage - manual 49
     e = BfM_GetTrain((TrainID*)catObjForFile, (char**)&catPage, PAGE_BUF);
     if (e < 0) ERR(e);
@@ -203,6 +199,10 @@ Four eduom_CreateObject(
     GET_PTR_TO_CATENTRY_FOR_DATA(catObjForFile, catPage, catEntry);
 
     MAKE_PAGEID(pFid, catEntry->fid.volNo, catEntry->firstPage);
+
+    // pFid - manual p44
+    e = RDsM_PageIdToExtNo((PageID *)&pFid, &firstExt);
+    if (e < 0) ERR(e);
 
     // 1. Free space를 계산
     // sizeof(ObjectHdr) + size of the aligned object data area + sizeof(SlottedPageSlot)
@@ -296,7 +296,7 @@ Four eduom_CreateObject(
                 // disk에 새로 할당된 page를 fix하고, 포인터를 apage에 담아 반환한다.
                 e = BfM_GetNewTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
                 if (e < 0) ERR(e);
-                
+
                 // header 초기화
                 SET_PAGE_TYPE(apage, SLOTTED_PAGE_TYPE);
                 apage->header.fid = catEntry->fid;
