@@ -126,14 +126,14 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   press_enter_for_continue(getcharFlag);              
   printf("\n\n");
 
-  /* Test for EduOM_CreateObeject() until a new page is needed */
-  printf("*Test 1_3 : Test for EduOM_CreateObeject() until a new page is needed\n");
+  /* Test for EduOM_CreateObject() until a new page is needed */
+  printf("*Test 1_3 : Test for EduOM_CreateObject() until a new page is needed\n");
   printf("->Insert new objects into the page until the 2nd object of 3rd page is created\n\n");
   for (i = FIRST_PAGE_OBJECT; i < THIRD_PAGE_OBJECT; i++){
     strcpy(omTestObjectNo, "EduOM_TestModule_OBJECT_NUM_");
     strcat(omTestObjectNo, itoa(i,10));
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = EduOM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
+    e = OM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
     if (e < eNOERROR) ERR(e);
     printf("The object ( %d, %d )  is inserted into the page\n", oid.pageNo, oid.slotNo);
   }

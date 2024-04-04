@@ -87,7 +87,49 @@ Four EduOM_CompactPage(
     Two    lastSlot;		/* last non empty slot */
     Two    i;			/* index variable */
 
-    
+    // 하나의 slotted page 안에 있는 object가 연속할 수 있게 offset을 재조정
+    // apage 원본을 keep 해놓는다.
+    tpage = *apage;
+
+    // 1. slotNo가 NIL(-1)이 아니라면
+    if (slotNo != NIL) {
+        //slotNo에 대응되는 object를 제외한 모든 object들을
+        //앞에서부터 연속되게 저장한다.
+        apageDataOffset = 0;
+        for (i = 0; i < tpage.header.nSlots; i++) {
+            if (i == slotNo) continue;
+            if (tpage.slot[-i].offset == EMPTYSLOT) continue;
+
+            obj = &(tpage.data[tpage.slot[-i].offset]);
+            len = ALIGNED_LENGTH(obj->header.length) + sizeof(ObjectHdr);
+            
+            //object를 복사
+            memcpy(&(apage->data[apageDataOffset]), (char *)obj, len);
+
+            //offset 정보를 slot에 기록, metadata update
+            apage->slot[-i].offset = apageDataOffset;
+            apageDataOffset += len;
+        }
+    }
+    // 2. slotNo가 NIL(-1)이라면
+    else {
+        //모든 object들을 앞에서부터 연속되게 저장
+        apageDataOffset = 0;
+        for (i = 0; i<tpage.header.nSlots; i++) {
+            obj = &(tpage.data[tpage.slot[-i].offset]);
+            len = ALIGNED_LENGTH(obj->header.length) + sizeof(ObjectHdr);
+
+            //object를 복사
+            memcpy(&(apage->data[apageDataOffset]), (char *)obj, len);
+
+            //offset 정보를 slot에 기록, metadata update
+            apage->slot[-i].offset = apageDataOffset;
+            apageDataOffset += len;
+        }
+    }
+
+    apage->header.unused = 0;
+    apage->header.free = apageDataOffset;
 
     return(eNOERROR);
     
