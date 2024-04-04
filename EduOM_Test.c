@@ -91,13 +91,13 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   if (e < eNOERROR) ERR(e);
 
   /* #1 Start the test for EduOM_CreateObject */
-  printf("****************************** TEST#1, EduOM_CreateObject and EduOM_DestroyObject ******************************\n");
+  printf("****************************** TEST#1, OM_CreateObject and EduOM_DestroyObject ******************************\n");
   /* Test for EduOM_CreateObject() when a near object is NULL */
   printf("*Test 1_1 : Test for EduOM_CreateObject() when a near object is NULL\n");
   printf("->Insert a new object into a empty page\n\n");
   strcat(omTestObjectNo, "0");
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_CreateObject(&catalogEntry, NULL, NULL, strlen(omTestObjectNo), omTestObjectNo , &oid);
+  e = OM_CreateObject(&catalogEntry, NULL, NULL, strlen(omTestObjectNo), omTestObjectNo , &oid);
   if (e < eNOERROR) ERR(e);
   printf("The object ( %d, %d )  is inserted into the page\n", oid.pageNo, oid.slotNo);
   firstOid = oid;
@@ -115,7 +115,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
     strcpy(omTestObjectNo, "EduOM_TestModule_OBJECT_NUM_");
     strcat(omTestObjectNo, itoa(i,10));	
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = EduOM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
+    e = OM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
     if(e < eNOERROR) ERR(e);		  
     printf("The object ( %d, %d )  is inserted into the page\n", oid.pageNo, oid.slotNo);
   }
@@ -133,7 +133,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
     strcpy(omTestObjectNo, "EduOM_TestModule_OBJECT_NUM_");
     strcat(omTestObjectNo, itoa(i,10));
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = EduOM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
+    e = OM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
     if (e < eNOERROR) ERR(e);
     printf("The object ( %d, %d )  is inserted into the page\n", oid.pageNo, oid.slotNo);
   }
@@ -154,7 +154,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
     oid.slotNo += 2;
     oid.unique += 2;
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    EduOM_DestroyObject(&catalogEntry, &oid, &dlPool, &dlHead);
+    OM_DestroyObject(&catalogEntry, &oid, &dlPool, &dlHead);
     printf("The object ( %d, %d )  is destroyed from the page\n", oid.pageNo, oid.slotNo);
   }
 
@@ -171,7 +171,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   oid = firstOid;
   strcpy(omTestObjectNo, "EduOM_OBJECT_FOR_COMPACT_TEST");
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
+  e = OM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
   if (e < eNOERROR) ERR(e);
   printf("The object ( %d, %d )  is inserted into the page\n", oid.pageNo, oid.slotNo);
 
@@ -187,7 +187,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("->Destroy the last object form the 3rd page\n\n");
 
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
+  e = OM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
   if (e < eNOERROR) ERR(e);
   printf("The object ( %d, %d )  is destroyed from the page\n", lastOid.pageNo, lastOid.slotNo);
 
@@ -210,7 +210,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
 
   do{
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = EduOM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
+    e = OM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
     if (e < eNOERROR) ERR(e);
 
     printf("The object ( %d, %d )  is destroyed from the page\n", lastOid.pageNo, lastOid.slotNo);
@@ -245,7 +245,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   oid = firstOid;
   memset(buffer, 0, 32);
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_ReadObject(&oid, 7, 15, &(buffer[0]));
+  e = OM_ReadObject(&oid, 7, 15, &(buffer[0]));
   if (e < eNOERROR) ERR(e);
   printf("Read data of the first object in the first page from 7th character to 15th character\n"); 
   printf("---------------------------------- Result ----------------------------------\n");
@@ -258,7 +258,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("->Read a full data of object\n\n");
   memset(buffer, 0, 32);
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_ReadObject(&oid, 0, REMAINDER, &(buffer[0]));
+  e = OM_ReadObject(&oid, 0, REMAINDER, &(buffer[0]));
   if (e < eNOERROR) ERR(e);
   printf("Read full data of the first object in first page\n");
   printf("---------------------------------- Result ----------------------------------\n");
@@ -275,7 +275,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("*Test 3_1 : Test for EduOM_PrevObject() when parameter curOID is NULL.\n");
   printf("->Get a last object identifier\n\n");
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_PrevObject(&catalogEntry, NULL, &oid, NULL);
+  e = OM_PrevObject(&catalogEntry, NULL, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   press_enter_for_continue(getcharFlag);
   printf("\n\n");
@@ -298,7 +298,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   press_enter_for_continue(getcharFlag);     
   printf("\n\n");
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_PrevObject(&catalogEntry, &oid, &oid, NULL);
+  e = OM_PrevObject(&catalogEntry, &oid, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   printf("---------------------------------- Result ----------------------------------\n");
 
@@ -320,11 +320,11 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   do
   {
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = EduOM_PrevObject(&catalogEntry, &oid, &oid, NULL);
+    e = OM_PrevObject(&catalogEntry, &oid, &oid, NULL);
     if (e < eNOERROR) ERR(e);
   }while(oid.slotNo != 0);
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_PrevObject(&catalogEntry, &oid, &oid, NULL);
+  e = OM_PrevObject(&catalogEntry, &oid, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   printf("---------------------------------- Result ----------------------------------\n");
 
@@ -351,7 +351,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("\n\n");
 
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_NextObject(&catalogEntry, NULL, &oid, NULL);
+  e = OM_NextObject(&catalogEntry, NULL, &oid, NULL);
   if (e < eNOERROR) ERR(e);
 
   printf("---------------------------------- Result ----------------------------------\n");
@@ -374,7 +374,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("\n\n");
 
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = EduOM_NextObject(&catalogEntry, &oid, &oid, NULL);
+  e = OM_NextObject(&catalogEntry, &oid, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   printf("---------------------------------- Result ----------------------------------\n");
 
@@ -397,7 +397,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   do
   {
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = EduOM_NextObject(&catalogEntry, &oid, &oid, NULL);
+    e = OM_NextObject(&catalogEntry, &oid, &oid, NULL);
     if (e < eNOERROR) ERR(e);
   }while(oid.slotNo != 0);
   printf("---------------------------------- Result ----------------------------------\n");

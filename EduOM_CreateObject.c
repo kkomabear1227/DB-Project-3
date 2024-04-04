@@ -171,7 +171,7 @@ Four eduom_CreateObject(
     Object      *obj;		/* point to the newly created object */
     Two         i;		/* index variable */
     sm_CatOverlayForData *catEntry; /* pointer to data file catalog information */
-    SlottedPage *catPage;	/* pointer to buffer containing the catalog */
+    SlottedPage *catPage;	/* podinter to buffer containing the catalog */
     FileID      fid;		/* ID of file where the new object is placed */
     Two         eff;		/* extent fill factor of file */
     Boolean     isTmp;
@@ -187,7 +187,163 @@ Four eduom_CreateObject(
     /* Error check whether using not supported functionality by EduOM */
     if(ALIGNED_LENGTH(length) > LRGOBJ_THRESHOLD) ERR(eNOTSUPPORTED_EDUOM);
     
-    
+    /* 
+    File을 구성하는 page 중 parameter로 들어온 object와 같거나 인접한 page에 삽입하고, object id를 반환
+    */
+
+    // 0. 사전에 setting 되어야할 값
+    // pFid - manual p44
+    e = RDsM_PageIdToExtNo((PageID *)&pFid, &firstExt);
+    if (e < 0) ERR(e);
+
+    // catPage - manual 49
+    e = BfM_GetTrain((TrainID*)catObjForFile, (char**)&catPage, PAGE_BUF);
+    if (e < 0) ERR(e);
+    // -> catEntry까지 설정
+    GET_PTR_TO_CATENTRY_FOR_DATA(catObjForFile, catPage, catEntry);
+
+    MAKE_PAGEID(pFid, catEntry->fid.volNo, catEntry->firstPage);
+
+    // 1. Free space를 계산
+    // sizeof(ObjectHdr) + size of the aligned object data area + sizeof(SlottedPageSlot)
+    alignedLen = ALIGNED_LENGTH(length);
+    neededSpace = sizeof(ObjectHdr) + alignedLen + sizeof(SlottedPageSlot);
+
+    // 2. page 선정
+    // 2-1. nearObj가 NULL이 아닌 경우
+    if (nearObj != NULL) {
+        MAKE_PAGEID(nearPid, nearObj->volNo, nearObj->pageNo);
+        BfM_GetTrain((TrainID *)&nearPid, (char **)&apage, PAGE_BUF);
+
+        // a. nearObj가 저장된 page에 충분한 여유 공간이 있는 경우
+        // available space list에서 삭제 후 object를 삽입
+        if (SP_FREE(apage) >= neededSpace) {
+            pid = nearPid;
+            om_RemoveFromAvailSpaceList(catObjForFile, &pid, apage);
+
+            // compaction이 필요할 경우 compaction을 수행
+            if (SP_CFREE(apage) < neededSpace) {
+                EduOM_CompactPage(apage, nearObj->slotNo);
+            }
+        }
+        // b. nearObj가 저장된 page에 충분한 여유 공간이 없는 경우
+        // nearObj가 저장된 page 옆에 새 page를 할당받아 삽입한다.
+        else {
+            // page 47
+            // 새로운 page 하나를 할당하고, ID를 pid에 저장한다.
+            e = RDsM_AllocTrains(catEntry->fid.volNo, firstExt, &nearPid, catEntry->eff, 1, PAGESIZE2, &pid);
+            if (e < 0) ERR(e);
+        
+            // page 51
+            // disk에 새로 할당된 page를 fix하고, 포인터를 apage에 담아 반환한다.
+            e = BfM_GetNewTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+            if (e < 0) ERR(e);
+
+            // header 초기화
+            SET_PAGE_TYPE(apage, SLOTTED_PAGE_TYPE);
+            apage->header.fid = catEntry->fid;
+            apage->header.free = 0;
+            apage->header.unused = 0;
+
+            //nearObj가 저장된 page의 다음 page로 insert한다.
+            om_FileMapAddPage(catObjForFile, &nearPid, &pid);
+        }
+    }
+    else { // nearObj == NULL
+        PageNo pageCandidate = NIL;
+        // available한 space들 중 가장 size가 딱 맞는 page를 찾아낸다.
+        if (neededSpace <= SP_50SIZE) pageCandidate = catEntry->availSpaceList50;
+        else if (neededSpace <= SP_40SIZE) pageCandidate = catEntry->availSpaceList40;
+        else if (neededSpace <= SP_30SIZE) pageCandidate = catEntry->availSpaceList30;
+        else if (neededSpace <= SP_20SIZE) pageCandidate = catEntry->availSpaceList20;
+        else pageCandidate = catEntry->availSpaceList10;
+
+        // a. object를 삽입할 공간이 있는 free page를 찾았다.
+        if (pageCandidate != NIL) {
+            // available space list에서 해당 entry를 삭제한다.
+            MAKE_PAGEID(pid, pFid.volNo, pageCandidate);
+            BfM_GetNewTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+            om_RemoveFromAvailSpaceList(catObjForFile, &pid, apage);
+
+            // Compaction if neccessary
+            if (SP_CFREE(apage) < neededSpace) {
+                EduOM_CompactPage(apage, nearObj->slotNo);
+            }
+        } 
+        // b. avail list에 object를 삽입할 수 있는 page를 찾지 못했다.
+        // 이 경우, file의 last page를 확인한다.
+        else {
+            MAKE_PAGEID(pid, pFid.volNo, catEntry->lastPage);
+            BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+            // b-1. last page에 object를 삽입할 수 있다.
+            if (SP_FREE(apage) >= neededSpace) {
+                om_RemoveFromAvailSpaceList(catObjForFile, &pid, apage);
+
+                // compaction이 필요할 경우 compaction을 수행
+                if (SP_CFREE(apage) < neededSpace) {
+                    EduOM_CompactPage(apage, nearObj->slotNo);
+                }
+            }
+            // b-2. last page에 object를 삽입할 수 없어, 새 page를 할당 받아야함.
+            else {
+                BfM_FreeTrain((TrainID *)&pid, PAGE_BUF); 
+                MAKE_PAGEID(nearPid, pFid.volNo, catEntry->lastPage);
+                // 새로운 page 하나를 할당하고, ID를 pid에 저장한다.
+                e = RDsM_AllocTrains(catEntry->fid.volNo, firstExt, &nearPid, catEntry->eff, 1, PAGESIZE2, &pid);
+                if (e < 0) ERR(e);
+        
+                // disk에 새로 할당된 page를 fix하고, 포인터를 apage에 담아 반환한다.
+                e = BfM_GetNewTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+                if (e < 0) ERR(e);
+                
+                // header 초기화
+                SET_PAGE_TYPE(apage, SLOTTED_PAGE_TYPE);
+                apage->header.fid = catEntry->fid;
+                apage->header.free = 0;
+                apage->header.unused = 0;
+
+                //nearObj가 저장된 page의 다음 page로 insert한다.
+                om_FileMapAddPage(catObjForFile, &nearPid, &pid);
+            }
+        }
+    }
+
+    // 3. 선정된 page에 object를 삽입
+    // 3-1. object header update
+    obj = (Object *)&(apage->data[apage->header.free]);
+    obj->header.properties = objHdr->properties;
+    obj->header.length = length;
+    obj->header.tag = objHdr->tag;
+
+    // 3-2. free area에 object를 복사
+    memcpy(obj->data, data, length);
+
+    // 3-3. Slot array에서 slot을 할당 받아 object 정보를 저장
+    for (i = 0; i < apage->header.nSlots; i++) {
+        if (apage->slot[-i].offset == EMPTYSLOT) break;
+    }
+
+    SlottedPageSlot* insertedSlot = &(apage->slot[-i]);
+    insertedSlot->offset = apage->header.free;
+    om_GetUnique(&pid, &(insertedSlot->unique));
+
+    // 3-4. page header 갱신
+    // free space 갱신
+    if (i == apage->header.nSlots) apage->header.nSlots++;
+    apage->header.free += sizeof(ObjectHdr) + alignedLen;
+
+    // page를 알맞는 available space list에 삽입함
+    om_PutInAvailSpaceList(catObjForFile, &pid, apage);
+    MAKE_OBJECTID(*oid, pid.volNo, pid.pageNo, i, insertedSlot->unique);
+
+    // Free resource
+    e = BfM_SetDirty(&pid, PAGE_BUF);
+    if (e < 0) ERRB1(e, &pid, PAGE_BUF);
+
+    BfM_FreeTrain(&pid, PAGE_BUF);
+    e = BfM_FreeTrain((TrainID *)catObjForFile, PAGE_BUF);
+    if (e < 0) ERR(e);
     
     return(eNOERROR);
     
