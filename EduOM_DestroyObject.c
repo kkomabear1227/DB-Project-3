@@ -125,7 +125,7 @@ Four EduOM_DestroyObject(
     apage->slot[-oid->slotNo].offset = EMPTYSLOT;
 
     // 3. Page Header 업데이트
-    // case 1. 
+    // case 1. a
     alignedLen = 
 
 
