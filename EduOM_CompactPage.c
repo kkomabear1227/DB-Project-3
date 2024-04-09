@@ -95,6 +95,7 @@ Four EduOM_CompactPage(
     if (slotNo != NIL) {
         //slotNo에 대응되는 object를 제외한 모든 object들을
         //앞에서부터 연속되게 저장한다.
+        //printf("HI!\n");
         apageDataOffset = 0;
         for (i = 0; i < tpage.header.nSlots; i++) {
             if (i == slotNo) continue;
@@ -110,6 +111,14 @@ Four EduOM_CompactPage(
             apage->slot[-i].offset = apageDataOffset;
             apageDataOffset += len;
         }
+
+        //slotNo에 대응되는 object는 마지막 object로 저장한다.
+        obj = &(tpage.data[tpage.slot[-slotNo].offset]);
+        len = ALIGNED_LENGTH(obj->header.length) + sizeof(ObjectHdr);
+
+        memcpy(&(apage->data[apageDataOffset]), (char *)obj, len);
+        apage->slot[slotNo].offset = apageDataOffset;
+        apageDataOffset += len;
     }
     // 2. slotNo가 NIL(-1)이라면
     else {
