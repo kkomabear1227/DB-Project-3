@@ -106,7 +106,7 @@ Four EduOM_NextObject(
         nextOID->slotNo = 0; // 첫 object
         nextOID->unique = apage->slot[0].unique;
 
-        BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+        //BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
     }
     // 2. curOID가 NULL이 아닌 경우
     else {
@@ -117,8 +117,37 @@ Four EduOM_NextObject(
         // 2-2. slot array에서 curOID 다음에 있는 object를 찾아 ID를 반환한다.
         //      만약 curOID object가 현재 page의 마지막 object라면 다음 page의 첫 object를 찾아 반환한다.
         //      만약 curOID object가 마지막 page의 마지막 object라면 EOS를 반환한다.
+
+        // Case 1. curOID가 해당 page의 마지막 object가 아님
+        if (curOID->slotNo + 1 != apage->header.nSlots) {
+            nextOID->volNo = curOID->volNo;
+            nextOID->pageNo = curOID->pageNo;
+            nextOID->slotNo = curOID->slotNo + 1;
+            nextOID->unique = apage->slot[-nextOID->slotNo].unique;
+        }
+        // Case 2. curOID가 해당 page의 마지막 object임
+        else {
+            // Case 2-1. curOID가 마지막 page의 마지막 object 였음
+            //if (apage->header.pid.pageNo == catEntry->lastPage) continue;
+
+            // Case 2-2. curOID가 nextPage가 있는 page의 마지막 object 였음
+            if (apage->header.pid.pageNo != catEntry->lastPage) {
+                pageNo = apage->header.nextPage;
+
+                nextOID->volNo = curOID->volNo;
+                nextOID->pageNo = pageNo;
+                nextOID->slotNo = 0; //첫 object
+
+                BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+                MAKE_PAGEID(pid, nextOID->volNo, nextOID->pageNo);
+                BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+                nextOID->unique = apage->slot[0].unique;
+            }
+        }
     }
 
+    BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
     BfM_FreeTrain((TrainID *)catObjForFile, PAGE_BUF);
     return(EOS);		/* end of scan */
     
