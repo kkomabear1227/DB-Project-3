@@ -1,5 +1,5 @@
 Loading EduOM_Test() complete...
-****************************** TEST#1, OM_CreateObject and EduOM_DestroyObject ******************************
+****************************** TEST#1, EduOM_CreateObject and EduOM_DestroyObject ******************************
 *Test 1_1 : Test for EduOM_CreateObject() when a near object is NULL
 ->Insert a new object into a empty page
 

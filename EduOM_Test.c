@@ -275,7 +275,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("*Test 3_1 : Test for EduOM_PrevObject() when parameter curOID is NULL.\n");
   printf("->Get a last object identifier\n\n");
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_PrevObject(&catalogEntry, NULL, &oid, NULL);
+  e = EduOM_PrevObject(&catalogEntry, NULL, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   press_enter_for_continue(getcharFlag);
   printf("\n\n");
@@ -298,7 +298,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   press_enter_for_continue(getcharFlag);     
   printf("\n\n");
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_PrevObject(&catalogEntry, &oid, &oid, NULL);
+  e = EduOM_PrevObject(&catalogEntry, &oid, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   printf("---------------------------------- Result ----------------------------------\n");
 
@@ -320,11 +320,11 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   do
   {
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = OM_PrevObject(&catalogEntry, &oid, &oid, NULL);
+    e = EduOM_PrevObject(&catalogEntry, &oid, &oid, NULL);
     if (e < eNOERROR) ERR(e);
   }while(oid.slotNo != 0);
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_PrevObject(&catalogEntry, &oid, &oid, NULL);
+  e = EduOM_PrevObject(&catalogEntry, &oid, &oid, NULL);
   if (e < eNOERROR) ERR(e);
   printf("---------------------------------- Result ----------------------------------\n");
 

@@ -87,6 +87,69 @@ Four EduOM_PrevObject(
     
     if (prevOID == NULL) ERR(eBADOBJECTID_OM);
 
+    // 0. catEntry를 불러온다.
+    BfM_GetTrain((TrainID *)catObjForFile, (char **)&catPage, PAGE_BUF);
+    GET_PTR_TO_CATENTRY_FOR_DATA(catObjForFile, catPage, catEntry);
+    //MAKE_PAGEID(pFid, catEntry->fid.volNo, catEntry->firstPage);
+
+    // 1. curOID가 NULL인 경우
+    if (curOID == NULL) {
+        // File에 들어있는 마지막 object의 ID를 반환한다.
+        //pageNo = catEntry->firstPage;
+        pageNo = catEntry->lastPage;
+
+        MAKE_PAGEID(pid, catEntry->fid.volNo, pageNo);
+        BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+        prevOID->volNo = pid.volNo;
+        prevOID->pageNo = pageNo;
+        prevOID->slotNo = apage->header.nSlots - 1; // 마지막 object
+        prevOID->unique = apage->slot[-prevOID->slotNo].unique;
+
+        //BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+    }
+    // 2. curOID가 NULL이 아닌 경우
+    else {
+        // 2-1. curOID에 대응되는 object를 찾는다.
+        MAKE_PAGEID(pid, curOID->volNo, curOID->pageNo);
+        BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+        // 2-2. slot array에서 curOID 이전에 있는 object를 찾아 ID를 반환한다.
+        //      만약 curOID object가 현재 page의 첫 object라면 이전 page의 마지막 object를 찾아 반환한다.
+        //      만약 이전 page가 EMPTY라면 EOS를 반환한다.
+        //      만약 curOID object가 첫 page의 첫 object라면 EOS를 반환한다.
+
+        // Case 1. curOID가 해당 page의 첫 object가 아님
+        if (curOID->slotNo != 0) {
+            prevOID->volNo = curOID->volNo;
+            prevOID->pageNo = curOID->pageNo;
+            prevOID->slotNo = curOID->slotNo - 1;
+            prevOID->unique = apage->slot[-prevOID->slotNo].unique;
+        }
+        // Case 2. curOID가 해당 page의 첫 object임
+        else {
+            // Case 2-1. curOID가 마지막 page의 마지막 object 였음
+            //if (apage->header.pid.pageNo == catEntry->lastPage) continue;
+
+            // Case 2-2. curOID가 prevPage가 있는 page의 마지막 object 였음
+            if (apage->header.pid.pageNo != catEntry->firstPage) {
+                pageNo = apage->header.prevPage;
+
+                prevOID->volNo = curOID->volNo;
+                prevOID->pageNo = pageNo;
+                prevOID->slotNo = apage->header.nSlots - 1; //첫 object
+
+                BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+                MAKE_PAGEID(pid, prevOID->volNo, prevOID->pageNo);
+                BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+                prevOID->unique = apage->slot[-prevOID->slotNo].unique;
+            }
+        }
+    }
+
+    BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+    BfM_FreeTrain((TrainID *)catObjForFile, PAGE_BUF);
     
 
     return(EOS);
