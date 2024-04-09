@@ -81,8 +81,6 @@ Four EduOM_NextObject(
     SlottedPage *catPage;	/* buffer page containing the catalog object */
     sm_CatOverlayForData *catEntry; /* data structure for catalog object access */
 
-
-
     /*@
      * parameter checking
      */
@@ -90,8 +88,38 @@ Four EduOM_NextObject(
     
     if (nextOID == NULL) ERR(eBADOBJECTID_OM);
 
+    // 0. catEntry를 불러온다.
+    BfM_GetTrain((TrainID *)catObjForFile, (char **)&catPage, PAGE_BUF);
+    GET_PTR_TO_CATENTRY_FOR_DATA(catObjForFile, catPage, catEntry);
+    MAKE_PAGEID(pFid, catEntry->fid.volNo, catEntry->firstPage);
 
+    // 1. curOID가 NULL인 경우
+    if (curOID == NULL) {
+        // File에 들어있는 첫 object의 ID를 반환한다.
+        pageNo = catEntry->firstPage;
 
+        MAKE_PAGEID(pid, pFid.volNo, pageNo);
+        BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+        nextOID->volNo = pid.volNo;
+        nextOID->pageNo = pageNo;
+        nextOID->slotNo = 0; // 첫 object
+        nextOID->unique = apage->slot[0].unique;
+
+        BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+    }
+    // 2. curOID가 NULL이 아닌 경우
+    else {
+        // 2-1. curOID에 대응되는 object를 찾는다.
+        MAKE_PAGEID(pid, curOID->volNo, curOID->pageNo);
+        BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+        // 2-2. slot array에서 curOID 다음에 있는 object를 찾아 ID를 반환한다.
+        //      만약 curOID object가 현재 page의 마지막 object라면 다음 page의 첫 object를 찾아 반환한다.
+        //      만약 curOID object가 마지막 page의 마지막 object라면 EOS를 반환한다.
+    }
+
+    BfM_FreeTrain((TrainID *)catObjForFile, PAGE_BUF);
     return(EOS);		/* end of scan */
     
 } /* EduOM_NextObject() */

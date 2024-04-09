@@ -351,7 +351,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("\n\n");
 
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_NextObject(&catalogEntry, NULL, &oid, NULL);
+  e = EduOM_NextObject(&catalogEntry, NULL, &oid, NULL);
   if (e < eNOERROR) ERR(e);
 
   printf("---------------------------------- Result ----------------------------------\n");
