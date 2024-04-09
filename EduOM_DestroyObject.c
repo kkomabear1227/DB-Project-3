@@ -97,14 +97,42 @@ Four EduOM_DestroyObject(
     DeallocListElem *dlElem;	/* pointer to element of dealloc list */
     PhysicalFileID pFid;	/* physical ID of file */
     
-    
-
     /*@ Check parameters. */
     if (catObjForFile == NULL) ERR(eBADCATALOGOBJECT_OM);
 
     if (oid == NULL) ERR(eBADOBJECTID_OM);
 
+    /* 여기부터 구현 */
+    // 1. available space list에서 object를 포함하고 있는 page를 삭제한다.
+    // 1-1. File의 catPage를 얻어온다.
+    BfM_GetTrain((TrainID *)catObjForFile, (char **)&catPage, PAGE_BUF);
+    GET_PTR_TO_CATENTRY_FOR_DATA(catObjForFile, catPage, catEntry);
 
+    // 1-2. object가 들어있는 page를 얻어온다.
+    MAKE_PAGEID(pid, oid->volNo, oid->pageNo);
+    BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+    om_RemoveFromAvailSpaceList(catObjForFile, &pid, apage);
+
+    // 2. 삭제할 object에 대응하는 slot을 empty unused slot으로 지정한다.
+    // offset of the slot = EMPTYSLOT
+    
+    // 2-1. 원래 offset을 기록
+    offset = apage->slot[-oid.slotNo].offset;
+    obj = (Object *)&(apage->data[offset]);
+
+    // 2-2. offset을 EMPTYSLOT으로 초기화
+    apage->slot[-oid.slotNo].offset = EMPTYSLOT;
+
+    // 3. Page Header 업데이트
+    // case 1. 
+    alignedLen = 
+
+
+    // 6. 마무리
+    BfM_SetDirty((TrainID *)&pid, PAGE_BUF);
+    BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
+    BfM_FreeTrain((TrainID *)catObjForFile, PAGE_BUF);
     
     return(eNOERROR);
     

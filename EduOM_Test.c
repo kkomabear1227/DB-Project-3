@@ -91,7 +91,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   if (e < eNOERROR) ERR(e);
 
   /* #1 Start the test for EduOM_CreateObject */
-  printf("****************************** TEST#1, OM_CreateObject and EduOM_DestroyObject ******************************\n");
+  printf("****************************** TEST#1, EduOM_CreateObject and EduOM_DestroyObject ******************************\n");
   /* Test for EduOM_CreateObject() when a near object is NULL */
   printf("*Test 1_1 : Test for EduOM_CreateObject() when a near object is NULL\n");
   printf("->Insert a new object into a empty page\n\n");
