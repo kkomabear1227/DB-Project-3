@@ -198,6 +198,7 @@ Four eduom_CreateObject(
     // -> catEntry까지 설정
     GET_PTR_TO_CATENTRY_FOR_DATA(catObjForFile, catPage, catEntry);
 
+    fid = catEntry->fid;
     MAKE_PAGEID(pFid, catEntry->fid.volNo, catEntry->firstPage);
 
     // pFid - manual p44
@@ -229,6 +230,7 @@ Four eduom_CreateObject(
         // b. nearObj가 저장된 page에 충분한 여유 공간이 없는 경우
         // nearObj가 저장된 page 옆에 새 page를 할당받아 삽입한다.
         else {
+            BfM_FreeTrain((TrainID *)&nearPid, PAGE_BUF);
             // page 47
             // 새로운 page 하나를 할당하고, ID를 pid에 저장한다.
             e = RDsM_AllocTrains(catEntry->fid.volNo, firstExt, &nearPid, catEntry->eff, 1, PAGESIZE2, &pid);

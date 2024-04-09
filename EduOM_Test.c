@@ -133,7 +133,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
     strcpy(omTestObjectNo, "EduOM_TestModule_OBJECT_NUM_");
     strcat(omTestObjectNo, itoa(i,10));
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = OM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
+    e = EduOM_CreateObject(&catalogEntry, &oid, NULL, strlen(omTestObjectNo), omTestObjectNo, &oid);
     if (e < eNOERROR) ERR(e);
     printf("The object ( %d, %d )  is inserted into the page\n", oid.pageNo, oid.slotNo);
   }
