@@ -118,11 +118,11 @@ Four EduOM_DestroyObject(
     // offset of the slot = EMPTYSLOT
     
     // 2-1. 원래 offset을 기록
-    offset = apage->slot[-oid.slotNo].offset;
+    offset = apage->slot[-oid->slotNo].offset;
     obj = (Object *)&(apage->data[offset]);
 
     // 2-2. offset을 EMPTYSLOT으로 초기화
-    apage->slot[-oid.slotNo].offset = EMPTYSLOT;
+    apage->slot[-oid->slotNo].offset = EMPTYSLOT;
 
     // 3. Page Header 업데이트
     // case 1. 

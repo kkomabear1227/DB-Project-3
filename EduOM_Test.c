@@ -245,7 +245,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   oid = firstOid;
   memset(buffer, 0, 32);
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_ReadObject(&oid, 7, 15, &(buffer[0]));
+  e = EduOM_ReadObject(&oid, 7, 15, &(buffer[0]));
   if (e < eNOERROR) ERR(e);
   printf("Read data of the first object in the first page from 7th character to 15th character\n"); 
   printf("---------------------------------- Result ----------------------------------\n");
@@ -258,7 +258,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("->Read a full data of object\n\n");
   memset(buffer, 0, 32);
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_ReadObject(&oid, 0, REMAINDER, &(buffer[0]));
+  e = EduOM_ReadObject(&oid, 0, REMAINDER, &(buffer[0]));
   if (e < eNOERROR) ERR(e);
   printf("Read full data of the first object in first page\n");
   printf("---------------------------------- Result ----------------------------------\n");
@@ -312,7 +312,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   if (e < eNOERROR) ERR(e);
   press_enter_for_continue(getcharFlag);
   printf("\n\n");
-  /* Test for EduOM_PrevObjeect when object whose objectID is parameter curOID is first object in the page */	
+  /* Test for EduOM_PrevObject when object whose objectID is parameter curOID is first object in the page */	
   printf("*Test 3_3 : Test for EduOM_PrevObjeect when object whose objectID is parameter curOID is first object in the page\n");
   printf("->Get a last object of a previous page of a last page\n\n");
   press_enter_for_continue(getcharFlag);    

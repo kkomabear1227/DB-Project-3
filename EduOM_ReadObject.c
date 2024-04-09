@@ -108,7 +108,21 @@ Four EduOM_ReadObject(
     
     if (buf == NULL) ERR(eBADUSERBUF_OM);
 
-    
+    // 1. oid를 활용해 object에 접근한다.
+    // 1-1. oid를 활용해 object가 들어있는 page를 알아낸다.
+    MAKE_PAGEID(pid, oid->volNo, oid->pageNo);
+    BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
+
+    // 1-2. obj 포인터를 얻는다.
+    obj = (Object *)&(apage->data[apage->slot[-oid->slotNo].offset]);
+
+    // 2. start, length를 사용해 object의 데이터를 읽는다.
+    // If length == REMAINDER, reade data to the end
+    if (length == REMAINDER) length = obj->header.length;
+    memcpy(buf, &(obj->data[start]), length);
+
+    // 3. 마무리
+    BfM_FreeTrain((TrainID *)&pid, PAGE_BUF);
 
     return(length);
     
