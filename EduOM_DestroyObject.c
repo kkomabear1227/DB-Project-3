@@ -112,6 +112,7 @@ Four EduOM_DestroyObject(
     MAKE_PAGEID(pid, oid->volNo, oid->pageNo);
     BfM_GetTrain((TrainID *)&pid, (char **)&apage, PAGE_BUF);
 
+    // 1-3. available space list에서 page를 삭제한다.
     om_RemoveFromAvailSpaceList(catObjForFile, &pid, apage);
 
     // 2. 삭제할 object에 대응하는 slot을 empty unused slot으로 지정한다.
@@ -125,9 +126,39 @@ Four EduOM_DestroyObject(
     apage->slot[-oid->slotNo].offset = EMPTYSLOT;
 
     // 3. Page Header 업데이트
-    // case 1. a
-    alignedLen = 
+    // Case 1. 지울 object가 slot array의 last slot이라면, slot array의 사이즈를 변경한다.
+    if (apage->header.nSlots == oid->slotNo + 1) {
+        apage->header.nSlots--;
+    }
 
+    alignedLen = ALIGNED_LENGTH(obj->header.length) + sizeof(ObjectHdr);
+
+    // Object의 offset에 따라 free나 unused 변수 값을 업데이트
+    if (offset + alignedLen == apage->header.free) apage->header.free -= alignedLen;
+    else apage->header.unused += alignedLen;
+
+    // 4. page가 file의 첫 페이지가 아니고, deleted object가 그 page의 only object라면
+    if (apage->header.pid.pageNo != catEntry->firstPage && apage->header.nSlots == 0) {
+        // 4-1. page를 page list에서 삭제
+        om_FileMapDeletePage(catObjForFile, &pid);
+
+        // 4-2. page를 deallocation
+        // a. dlPool에서 새로운 dealloc list element를 할당받음
+        Util_getElementFromPool(dlPool, &dlElem);
+
+        // b. deallocation할 page의 정보를 dlElem에 저장한다.
+        dlElem->type = DL_PAGE;
+        dlElem->elem.pid = pid;
+
+        // c. dealloc list의 first element를 dlElem으로 만든다.
+        dlElem->next = dlHead->next;
+        dlHead->next = dlElem;
+    }
+    // 5. page가 file의 첫 페이지거나, deleted object가 그 page의 여러 object 중 하나라면
+    else {
+        // page를 appropriate available space list에 삽입한다.
+        om_PutInAvailSpaceList(catObjForFile, &pid, apage);
+    }
 
     // 6. 마무리
     BfM_SetDirty((TrainID *)&pid, PAGE_BUF);

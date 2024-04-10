@@ -205,7 +205,7 @@ The object ( 208, 83 )  is inserted into the page
 +------------------------------------------------------------+
 
 
-*Test 1_3 : Test for EduOM_CreateObject() until a new page is needed
+*Test 1_3 : Test for EduOM_CreateObeject() until a new page is needed
 ->Insert new objects into the page until the 2nd object of 3rd page is created
 
 The object ( 209, 0 )  is inserted into the page
