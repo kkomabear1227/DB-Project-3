@@ -126,8 +126,8 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   press_enter_for_continue(getcharFlag);              
   printf("\n\n");
 
-  /* Test for EduOM_CreateObject() until a new page is needed */
-  printf("*Test 1_3 : Test for EduOM_CreateObject() until a new page is needed\n");
+  /* Test for EduOM_CreateObeject() until a new page is needed */
+  printf("*Test 1_3 : Test for EduOM_CreateObeject() until a new page is needed\n");
   printf("->Insert new objects into the page until the 2nd object of 3rd page is created\n\n");
   for (i = FIRST_PAGE_OBJECT; i < THIRD_PAGE_OBJECT; i++){
     strcpy(omTestObjectNo, "EduOM_TestModule_OBJECT_NUM_");
@@ -154,7 +154,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
     oid.slotNo += 2;
     oid.unique += 2;
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    OM_DestroyObject(&catalogEntry, &oid, &dlPool, &dlHead);
+    EduOM_DestroyObject(&catalogEntry, &oid, &dlPool, &dlHead);
     printf("The object ( %d, %d )  is destroyed from the page\n", oid.pageNo, oid.slotNo);
   }
 
@@ -187,7 +187,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   printf("->Destroy the last object form the 3rd page\n\n");
 
   /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-  e = OM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
+  e = EduOM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
   if (e < eNOERROR) ERR(e);
   printf("The object ( %d, %d )  is destroyed from the page\n", lastOid.pageNo, lastOid.slotNo);
 
@@ -210,7 +210,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
 
   do{
     /* The successful default solution code is called if "Edu" is omitted from the function name in the following line */
-    e = OM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
+    e = EduOM_DestroyObject(&catalogEntry, &lastOid, &dlPool, &dlHead);
     if (e < eNOERROR) ERR(e);
 
     printf("The object ( %d, %d )  is destroyed from the page\n", lastOid.pageNo, lastOid.slotNo);
@@ -312,7 +312,7 @@ Four EduOM_Test(Four volId, Four handle, Boolean getcharFlag){
   if (e < eNOERROR) ERR(e);
   press_enter_for_continue(getcharFlag);
   printf("\n\n");
-  /* Test for EduOM_PrevObject when object whose objectID is parameter curOID is first object in the page */	
+  /* Test for EduOM_PrevObjeect when object whose objectID is parameter curOID is first object in the page */	
   printf("*Test 3_3 : Test for EduOM_PrevObjeect when object whose objectID is parameter curOID is first object in the page\n");
   printf("->Get a last object of a previous page of a last page\n\n");
   press_enter_for_continue(getcharFlag);    
